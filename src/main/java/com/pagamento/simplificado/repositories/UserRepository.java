@@ -1,6 +1,6 @@
 package com.pagamento.simplificado.repositories;
 
-import com.pagamento.simplificado.domain.user.User;
+import com.pagamento.simplificado.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
