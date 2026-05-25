@@ -1,4 +1,4 @@
-package com.pagamento.simplificado.domain.user;
+package com.pagamento.simplificado.domain;
 
 public enum UserType {
     COMMON,
