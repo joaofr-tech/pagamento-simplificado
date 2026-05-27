@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -25,8 +27,12 @@ public class TransactionService {
 
     @Autowired
     private RestTemplate restTemplate;
+    
+    @Autowired
+    private NotificationService notificationService;
 
-    public void createTransaction(TransactionDTO transaction) throws Exception {
+    @Transactional
+    public Transaction createTransaction(TransactionDTO transaction) throws Exception {
         User sender = this.userService.findUserById(transaction.senderId());
         User receiver = this.userService.findUserById(transaction.receiverId());
 
@@ -38,7 +44,7 @@ public class TransactionService {
         }
 
         Transaction transaction1 = new Transaction();
-        transaction1.setAmount(transaction1.getAmount());
+        transaction1.setAmount(transaction.value());
         transaction1.setSender(sender);
         transaction1.setReceiver(receiver);
         transaction1.setTimestamp(LocalDateTime.now());
@@ -49,14 +55,35 @@ public class TransactionService {
         this.repository.save(transaction1);
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
+        this.notificationService.sendNotification(sender, "transacao concluida");
+        this.notificationService.sendNotification(receiver, "transacao concluida");
+
+        return transaction1;
     }
 
     public boolean authorizeTransaction(User sender, BigDecimal value){
-        ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
+        try {
+            ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
 
-        if (authorizationResponse.getStatusCode() == HttpStatus.OK){
-            String message = (String) authorizationResponse.getBody().get("message");
-            return "Autorizado".equalsIgnoreCase(message);
-        } else return false;
+            if (authorizationResponse.getStatusCode() != HttpStatus.OK || authorizationResponse.getBody() == null){
+                return false;
+            }
+
+            Map body = authorizationResponse.getBody();
+            Object message = body.get("message");
+            if (message instanceof String && "Autorizado".equalsIgnoreCase((String) message)){
+                return true;
+            }
+
+            Object data = body.get("data");
+            if (data instanceof Map){
+                Object authorization = ((Map) data).get("authorization");
+                return Boolean.TRUE.equals(authorization);
+            }
+
+            return false;
+        } catch (RestClientException exception) {
+            return false;
+        }
     }
 }
