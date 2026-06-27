@@ -4,7 +4,6 @@ import com.pagamento.simplificado.domain.User;
 import com.pagamento.simplificado.domain.UserType;
 import com.pagamento.simplificado.dtos.UserDTO;
 import com.pagamento.simplificado.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,8 +12,11 @@ import java.util.List;
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository repository;
+    private final UserRepository repository;
+
+    UserService(UserRepository repository) {
+        this.repository = repository;
+    }
 
     public void validateTransaction(User sender, BigDecimal amount) throws Exception {
         if (sender.getUserType() == UserType.MERCHANT){

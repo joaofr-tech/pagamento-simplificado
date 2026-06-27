@@ -3,7 +3,6 @@ package com.pagamento.simplificado.controller;
 import com.pagamento.simplificado.domain.User;
 import com.pagamento.simplificado.dtos.UserDTO;
 import com.pagamento.simplificado.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +17,11 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody UserDTO user){

@@ -4,7 +4,6 @@ import com.pagamento.simplificado.domain.Transaction;
 import com.pagamento.simplificado.domain.User;
 import com.pagamento.simplificado.dtos.TransactionDTO;
 import com.pagamento.simplificado.repositories.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,17 +18,20 @@ import java.util.Map;
 @Service
 public class TransactionService {
 
-    @Autowired
-    private TransactionRepository repository;
+    private final TransactionRepository repository;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
     
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
+
+    TransactionService(TransactionRepository repository, UserService userService, RestTemplate restTemplate, NotificationService notificationService) {
+        this.repository = repository;
+        this.userService = userService;
+        this.restTemplate = restTemplate;
+        this.notificationService = notificationService;
+    }
 
     @Transactional
     public Transaction createTransaction(TransactionDTO transaction) throws Exception {
