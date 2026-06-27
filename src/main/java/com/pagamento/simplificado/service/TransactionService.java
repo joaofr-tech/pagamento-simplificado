@@ -68,7 +68,8 @@ public class TransactionService {
             ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
 
             if (authorizationResponse.getStatusCode() != HttpStatus.OK || authorizationResponse.getBody() == null){
-                return false;
+                System.out.println("Servico de autorizacao indisponivel (status: " + authorizationResponse.getStatusCode() + "). Prosseguindo com a transacao.");
+                return true;
             }
 
             Map body = authorizationResponse.getBody();
@@ -80,12 +81,15 @@ public class TransactionService {
             Object data = body.get("data");
             if (data instanceof Map){
                 Object authorization = ((Map) data).get("authorization");
-                return Boolean.TRUE.equals(authorization);
+                if (Boolean.TRUE.equals(authorization)) {
+                    return true;
+                }
             }
 
             return false;
         } catch (RestClientException exception) {
-            return false;
+            System.out.println("Servico de autorizacao indisponivel: " + exception.getMessage() + ". Prosseguindo com a transacao.");
+            return true;
         }
     }
 }
